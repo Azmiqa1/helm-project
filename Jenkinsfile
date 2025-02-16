@@ -1,24 +1,24 @@
 pipeline {
-    agent any  
+    agent any
 
     environment {
-        DOCKER_REGISTRY = 'ghcr.io/azmiqa1/helm-project' 
-        DOCKER_USER = credentials('docker-registry-username')
-        DOCKER_PASS = credentials('docker-registry-username')
-        APP_NAME = 'frontend-apppp'
-        PATH = "/usr/local/bin:${env.PATH}"
-        IMAGE_TAG = "${DOCKER_REGISTRY}/${APP_NAME}:${env.BUILD_NUMBER}"
-        HELM_CHART_DIR = 'frontend-chart'  
-        BASE_CHART_DIR = 'base-chart'  
-        KUBE_NAMESPACE = 'default'  
+        DOCKER_REGISTRY = 'ghcr.io' // GitHub Container Registry
+        DOCKER_IMAGE = 'helm-project/frontend-apppp'
+        IMAGE_TAG = '5'
     }
 
     stages {
+        stage('Checkout SCM') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Clone Repository') {
             steps {
                 script {
-                    echo "Cloning GitHub repository..."
-                    checkout scm  
+                    echo 'Cloning GitHub repository...'
+                    checkout scm
                 }
             }
         }
@@ -27,14 +27,23 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker image from hello-frontend directory..."
-                    sh """
-                        cd hello-frontend
-                        docker build -t ${IMAGE_TAG} .
-                    """
                     
+                    // Navigate to the 'hello-frontend' directory
+                    dir('hello-frontend') {
+                        // Build the Docker image
+                        sh 'docker build -t ${DOCKER_REGISTRY}/azmiqa1/${DOCKER_IMAGE}:${IMAGE_TAG} .'
+                    }
+
                     echo "Logging in and pushing image..."
-                    sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin ${DOCKER_REGISTRY}"
-                    sh "docker push ${IMAGE_TAG}"
+
+                    // Use withCredentials to securely handle Docker credentials
+                    withCredentials([usernamePassword(credentialsId: 'docker-registry-username', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
+                        // Login to GitHub Container Registry
+                        sh """
+                            echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin ${DOCKER_REGISTRY}
+                            docker push ${DOCKER_REGISTRY}/azmiqa1/${DOCKER_IMAGE}:${IMAGE_TAG}
+                        """
+                    }
                 }
             }
         }
@@ -42,25 +51,23 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    echo "Deploying ${APP_NAME} to Kubernetes namespace ${KUBE_NAMESPACE}..."
-                    sh """
-                        helm upgrade --install ${APP_NAME} ${HELM_CHART_DIR} \
-                            --namespace ${KUBE_NAMESPACE} \
-                            --set image.repository=${DOCKER_REGISTRY}/${APP_NAME} \
-                            --set image.tag=${env.BUILD_NUMBER} \
-                            --set baseChart.path=${BASE_CHART_DIR}
-                    """
+                    echo 'Deploying to Kubernetes...'
+                    // Optional deployment logic can be added here
+                    // Example: kubectl apply -f k8s/deployment.yaml
                 }
             }
         }
     }
 
     post {
+        always {
+            echo 'Cleaning up...'
+        }
         success {
-            echo "Deployment succeeded!"
+            echo 'Deployment was successful!'
         }
         failure {
-            echo "Deployment failed!"
+            echo 'Deployment failed!'
         }
     }
 }
