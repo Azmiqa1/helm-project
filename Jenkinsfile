@@ -29,7 +29,7 @@ pipeline {
                     echo "Building Docker image from hello-frontend directory..."
                     sh """
                         cd hello-frontend
-                        docker build -t ${IMAGE_TAG} .  // Build the Docker image locally
+                        docker build -t ${IMAGE_TAG} .  // Ensure Docker build command uses the correct path
                     """
                 }
             }
@@ -40,9 +40,9 @@ pipeline {
                 script {
                     echo "Running the Docker image locally..."
                     sh """
-                        docker run -d -p 8081:80 ${IMAGE_TAG}  // Run Docker container on port 8080
+                        docker run -d -p 8080:80 ${IMAGE_TAG}  // Run Docker container on port 8080
                     """
-                    echo "Your app is now running at http://localhost:8081"
+                    echo "Your app is now running at http://localhost:8080"
                 }
             }
         }
