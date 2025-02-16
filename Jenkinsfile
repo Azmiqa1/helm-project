@@ -1,34 +1,39 @@
 pipeline {
-    agent any
+    agent any  
 
     environment {
-        DOCKER_REGISTRY = 'ghcr.io' // Replace with your Docker registry URL
-        FRONTEND_IMAGE = "${DOCKER_REGISTRY}/Azmiqa1/frontend-app:${env.BUILD_NUMBER}"
-        FRONTEND_CODE_DIR = "hello-frontend" // Path to frontend code + Dockerfile
-        FRONTEND_CHART_DIR = "frontend-chart" // Path to frontend Helm chart
-        NAMESPACE = "frontend"
+        DOCKER_REGISTRY = 'ghcr.io/Azmiqa1/helm-project' 
+        DOCKER_USER = credentials('docker-registry-username')
+        DOCKER_PASS = credentials('docker-registry-password')
+        APP_NAME = 'frontend-app'  
+        IMAGE_TAG = "${DOCKER_REGISTRY}/${APP_NAME}:${env.BUILD_NUMBER}"
+        HELM_CHART_DIR = 'frontend-chart'  
+        BASE_CHART_DIR = 'base-chart'  
+        KUBE_NAMESPACE = 'default'  
     }
 
     stages {
-        stage('Build Frontend Docker Image') {
+        stage('Clone Repository') {
             steps {
                 script {
-                    echo "Building Docker image for frontend..."
-                    dir(FRONTEND_CODE_DIR) {
-                        sh "docker build -t ${FRONTEND_IMAGE} ."
-                    }
+                    echo "Cloning GitHub repository..."
+                    checkout scm  
                 }
             }
         }
 
-        stage('Push Docker Image') {
+        stage('Build & Push Docker Image') {
             steps {
                 script {
-                    echo "Pushing Docker image to registry..."
-                    withCredentials([usernamePassword(credentialsId: 'docker-registry-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS} ${DOCKER_REGISTRY}"
-                        sh "docker push ${FRONTEND_IMAGE}"
-                    }
+                    echo "Building Docker image from hello-frontend directory..."
+                    sh """
+                        cd hello-frontend
+                        docker build -t ${IMAGE_TAG} .
+                    """
+                    
+                    echo "Logging in and pushing image..."
+                    sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin ${DOCKER_REGISTRY}"
+                    sh "docker push ${IMAGE_TAG}"
                 }
             }
         }
@@ -36,16 +41,14 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    echo "Deploying frontend to ${NAMESPACE} namespace..."
-                    dir(FRONTEND_CHART_DIR) {
-                        sh """
-                            helm upgrade --install frontend-app . \
-                                --namespace ${NAMESPACE} \
-                                --set image.repository=${DOCKER_REGISTRY}/frontend-app \
-                                --set image.tag=${env.BUILD_NUMBER} \
-                                --set service.type=ClusterIP
-                        """
-                    }
+                    echo "Deploying ${APP_NAME} to Kubernetes namespace ${KUBE_NAMESPACE}..."
+                    sh """
+                        helm upgrade --install ${APP_NAME} ${HELM_CHART_DIR} \
+                            --namespace ${KUBE_NAMESPACE} \
+                            --set image.repository=${DOCKER_REGISTRY}/${APP_NAME} \
+                            --set image.tag=${env.BUILD_NUMBER} \
+                            --set baseChart.path=${BASE_CHART_DIR}
+                    """
                 }
             }
         }
@@ -53,10 +56,10 @@ pipeline {
 
     post {
         success {
-            echo "Frontend deployment to ${NAMESPACE} namespace succeeded!"
+            echo "Deployment succeeded!"
         }
         failure {
-            echo "Frontend deployment to ${NAMESPACE} namespace failed!"
+            echo "Deployment failed!"
         }
     }
 }
