@@ -39,7 +39,7 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: 'docker-registry-username', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         // Login to the Docker registry
                         sh '''
-                            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin $DOCKER_REGISTRY
+                            echo $DOCKER_PASS | docker login -u azmiqa1 --password-stdin $DOCKER_REGISTRY
                             docker push $DOCKER_REGISTRY/$DOCKER_IMAGE:$IMAGE_TAG
                         '''
                     }
