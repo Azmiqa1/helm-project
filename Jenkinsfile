@@ -42,7 +42,7 @@ pipeline {
                     sh """
                         docker run -d -p 8081:80 ${IMAGE_TAG}  // Run Docker container on port 8080
                     """
-                    echo "Your app is now running at http://localhost:8080"
+                    echo "Your app is now running at http://localhost:8081"
                 }
             }
         }
