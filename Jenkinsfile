@@ -1,66 +1,50 @@
 pipeline {
-    agent any  
-
+    agent any
+    
     environment {
-        DOCKER_REGISTRY = 'ghcr.io/azmiqa1/helm-project' 
-        DOCKER_USER = credentials('docker-registry')
-        DOCKER_PASS = credentials('docker-registry')
-        APP_NAME = 'frontend-apppp'
-        PATH = "/usr/local/bin:${env.PATH}"
-        IMAGE_TAG = "${DOCKER_REGISTRY}/${APP_NAME}:${env.BUILD_NUMBER}"
-        HELM_CHART_DIR = 'frontend-chart'  
-        BASE_CHART_DIR = 'base-chart'  
-        KUBE_NAMESPACE = 'default'  
+        DOCKER_REGISTRY = "ghcr.io"
+        IMAGE_NAME = "azmiqa1/helm-project/frontend-apppp"
+        IMAGE_TAG = "latest"
     }
 
     stages {
-        stage('Clone Repository') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    echo "Cloning GitHub repository..."
-                    checkout scm  
-                }
-            }
-        }
-
-        stage('Build & Push Docker Image') {
-            steps {
-                script {
-                    echo "Building Docker image from hello-frontend directory..."
+                    echo "Building Docker image..."
                     sh """
                         cd hello-frontend
-                        docker build -t ${IMAGE_TAG} .
+                        docker build -t \$DOCKER_REGISTRY/\$IMAGE_NAME:\$IMAGE_TAG .
                     """
-                    
-                    echo "Logging in and pushing image..."
-                    sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin ${DOCKER_REGISTRY}"
-                    sh "docker push ${IMAGE_TAG}"
                 }
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Docker Login') {
             steps {
-                script {
-                    echo "Deploying ${APP_NAME} to Kubernetes namespace ${KUBE_NAMESPACE}..."
+                withCredentials([usernamePassword(credentialsId: 'docker-registry', usernameVariable: 'docker-registry', passwordVariable: 'docker-registry')]) {
+                    echo "Logging in to GitHub Container Registry..."
                     sh """
-                        helm upgrade --install ${APP_NAME} ${HELM_CHART_DIR} \
-                            --namespace ${KUBE_NAMESPACE} \
-                            --set image.repository=${DOCKER_REGISTRY}/${APP_NAME} \
-                            --set image.tag=${env.BUILD_NUMBER} \
-                            --set baseChart.path=${BASE_CHART_DIR}
+                        echo \$DOCKER_PASS | docker login \$DOCKER_REGISTRY -u \$DOCKER_USER --password-stdin
                     """
                 }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                echo "Pushing Docker image to GitHub Container Registry..."
+                sh """
+                    docker push \$DOCKER_REGISTRY/\$IMAGE_NAME:\$IMAGE_TAG
+                """
             }
         }
     }
 
     post {
-        success {
-            echo "Deployment succeeded!"
-        }
-        failure {
-            echo "Deployment failed!"
+        always {
+            echo "Cleaning up..."
+            sh "docker logout \$DOCKER_REGISTRY"
         }
     }
 }
