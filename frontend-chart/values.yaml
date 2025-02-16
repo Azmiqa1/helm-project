@@ -1,0 +1,12 @@
+replicaCount: 1
+
+image:
+  repository: "/Users/azmi-alqawasmi/Desktop/hello-frontend"
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources: {} 
