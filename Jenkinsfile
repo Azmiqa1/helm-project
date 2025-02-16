@@ -3,8 +3,8 @@ pipeline {
 
     environment {
         DOCKER_REGISTRY = 'ghcr.io/azmiqa1/helm-project' 
-        DOCKER_USER = credentials('docker-registry-user')
-        DOCKER_PASS = credentials('docker-registry-user')
+        DOCKER_USER = credentials('docker-registry')
+        DOCKER_PASS = credentials('docker-registry')
         APP_NAME = 'frontend-apppp'
         PATH = "/usr/local/bin:${env.PATH}"
         IMAGE_TAG = "${DOCKER_REGISTRY}/${APP_NAME}:${env.BUILD_NUMBER}"
