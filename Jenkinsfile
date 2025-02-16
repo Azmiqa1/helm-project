@@ -5,7 +5,7 @@ pipeline {
         DOCKER_REGISTRY = 'ghcr.io/Azmiqa1/helm-project' 
         DOCKER_USER = credentials('docker-registry-username')
         DOCKER_PASS = credentials('docker-registry-password')
-        APP_NAME = 'frontend-app'  
+        APP_NAME = 'frontend-apppp'  
         IMAGE_TAG = "${DOCKER_REGISTRY}/${APP_NAME}:${env.BUILD_NUMBER}"
         HELM_CHART_DIR = 'frontend-chart'  
         BASE_CHART_DIR = 'base-chart'  
