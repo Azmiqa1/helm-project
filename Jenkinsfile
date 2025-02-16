@@ -31,7 +31,7 @@ pipeline {
                     // Navigate to the 'hello-frontend' directory
                     dir('hello-frontend') {
                         // Build the Docker image
-                        sh 'docker build -t ${DOCKER_REGISTRY}/azmiqa1/${DOCKER_IMAGE}:${IMAGE_TAG} .'
+                        sh 'docker build -t ghcr.io/Azmiqa1/${DOCKER_IMAGE}:${IMAGE_TAG} .'
                     }
 
                     echo "Logging in and pushing image..."
