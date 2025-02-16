@@ -1,48 +1,47 @@
 pipeline {
-    agent any
+    agent any  // Runs on any available Jenkins agent
 
     environment {
-        DOCKER_REGISTRY = 'ghcr.io' // GitHub Container Registry
-        DOCKER_IMAGE = 'helm-project/frontend-apppp'
-        IMAGE_TAG = '5'
+        DOCKER_REGISTRY = 'ghcr.io' // Docker registry URL (GitHub Container Registry)
+        DOCKER_IMAGE = 'helm-project/frontend-apppp' // Name of your Docker image
+        IMAGE_TAG = '5' // Tag for the Docker image
+        PATH = "/usr/local/bin:$PATH" // Adjust the PATH to include Docker binary location (adjust as necessary)
     }
 
     stages {
         stage('Checkout SCM') {
             steps {
-                checkout scm
-            }
-        }
-
-        stage('Clone Repository') {
-            steps {
                 script {
-                    echo 'Cloning GitHub repository...'
+                    // Checkout the code from the repository
                     checkout scm
                 }
             }
         }
 
-        stage('Build & Push Docker Image') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    echo "Building Docker image from hello-frontend directory..."
-                    
-                    // Navigate to the 'hello-frontend' directory
+                    echo 'Building Docker image from hello-frontend directory...'
                     dir('hello-frontend') {
                         // Build the Docker image
-                        sh 'docker build -t ghcr.io/Azmiqa1/${DOCKER_IMAGE}:${IMAGE_TAG} .'
+                        sh 'docker build -t $DOCKER_REGISTRY/$DOCKER_IMAGE:$IMAGE_TAG .'
                     }
+                }
+            }
+        }
 
-                    echo "Logging in and pushing image..."
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    echo 'Logging in and pushing Docker image to registry...'
 
-                    // Use withCredentials to securely handle Docker credentials
-                    withCredentials([usernamePassword(credentialsId: 'docker-registry-username', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
-                        // Login to GitHub Container Registry
-                        sh """
-                            echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin ${DOCKER_REGISTRY}
-                            docker push ${DOCKER_REGISTRY}/azmiqa1/${DOCKER_IMAGE}:${IMAGE_TAG}
-                        """
+                    // Ensure that the Docker credentials are available in Jenkins credentials store
+                    withCredentials([usernamePassword(credentialsId: 'docker-registry-username', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        // Login to the Docker registry
+                        sh '''
+                            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin $DOCKER_REGISTRY
+                            docker push $DOCKER_REGISTRY/$DOCKER_IMAGE:$IMAGE_TAG
+                        '''
                     }
                 }
             }
@@ -51,21 +50,25 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    echo 'Deploying to Kubernetes...'
-                    // Optional deployment logic can be added here
-                    // Example: kubectl apply -f k8s/deployment.yaml
+                    echo 'Deploying Docker image to Kubernetes...'
+                    // Add your Kubernetes deployment steps here
+                    // For example, using kubectl to deploy the image to your Kubernetes cluster
+                    // sh 'kubectl apply -f k8s-deployment.yaml'
+                }
+            }
+        }
+
+        stage('Post Actions') {
+            steps {
+                script {
+                    echo 'Deployment completed!'
+                    // Add any post-deployment actions here
                 }
             }
         }
     }
 
     post {
-        always {
-            echo 'Cleaning up...'
-        }
-        success {
-            echo 'Deployment was successful!'
-        }
         failure {
             echo 'Deployment failed!'
         }
