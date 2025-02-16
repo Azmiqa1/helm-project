@@ -22,7 +22,7 @@ pipeline {
 
         stage('Docker Login') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-registry', usernameVariable: 'docker-registry', passwordVariable: 'docker-registry')]) {
+                withCredentials([usernamePassword(credentialsId: 'docker-registry', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     echo "Logging in to GitHub Container Registry..."
                     sh """
                         echo \$DOCKER_PASS | docker login \$DOCKER_REGISTRY -u \$DOCKER_USER --password-stdin
