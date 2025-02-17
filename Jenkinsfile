@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_HUB_REPO = 'azmiqa1/hello-frontend'  
-        DOCKER_USER = credentials('docker-hub1') 
+        DOCKER_USER = 'azmiqa1' 
         DOCKER_PASS = credentials('docker-hub1')
         APP_NAME = 'frontend-appp'
         PATH = "/usr/local/bin:${env.PATH}"
@@ -33,7 +33,7 @@ pipeline {
                     """
                     
                     echo "Logging into Docker Hub and pushing image..."
-                    sh "echo ${DOCKER_PASS} | docker login -u 'azmiqa1' --password-stdin"
+                    sh "echo ${DOCKER_PASS} | docker login -u '${DOCKER_USER}' --password-stdin"
                     sh "docker push ${IMAGE_TAG}"
                 }
             }
