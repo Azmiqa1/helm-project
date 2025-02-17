@@ -2,12 +2,9 @@ pipeline {
     agent any  
 
     environment {
-        DOCKER_REGISTRY = 'ghcr.io/azmiqa1/helm-project' 
-        DOCKER_USER = credentials('docker-registry')
-        DOCKER_PASS = credentials('docker-registry')
         APP_NAME = 'frontend-apppp'
         PATH = "/usr/local/bin:${env.PATH}"
-        IMAGE_TAG = "${DOCKER_REGISTRY}/${APP_NAME}:${env.BUILD_NUMBER}"
+        IMAGE_TAG = "localhost/${APP_NAME}:${env.BUILD_NUMBER}"
         HELM_CHART_DIR = 'frontend-chart'  
         BASE_CHART_DIR = 'base-chart'  
         KUBE_NAMESPACE = 'default'  
@@ -17,24 +14,32 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 script {
-                    echo "Cloning GitHub repository..."
+                    echo "Cloning GitHub repository"
                     checkout scm  
                 }
             }
         }
 
-        stage('Build & Push Docker Image') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    echo "Building Docker image from hello-frontend directory..."
+                    echo "Building Docker image from hello-frontend directory"
                     sh """
                         cd hello-frontend
                         docker build -t ${IMAGE_TAG} .
                     """
-                    
-                    echo "Logging in and pushing image..."
-                    sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin ${DOCKER_REGISTRY}"
-                    sh "docker push ${IMAGE_TAG}"
+                }
+            }
+        }
+
+        stage('Push The Image') {
+            steps {
+                script {
+                    echo "Saving Docker image as a tar file on the local machine"
+                    sh """
+                        docker save -o /home/user/Desktop/${APP_NAME}.tar ${IMAGE_TAG}
+                        docker load -i /home/user/Desktop/${APP_NAME}.tar
+                    """
                 }
             }
         }
@@ -46,7 +51,7 @@ pipeline {
                     sh """
                         helm upgrade --install ${APP_NAME} ${HELM_CHART_DIR} \
                             --namespace ${KUBE_NAMESPACE} \
-                            --set image.repository=${DOCKER_REGISTRY}/${APP_NAME} \
+                            --set image.repository=localhost/${APP_NAME} \
                             --set image.tag=${env.BUILD_NUMBER} \
                             --set baseChart.path=${BASE_CHART_DIR}
                     """
