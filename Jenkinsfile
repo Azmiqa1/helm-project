@@ -7,7 +7,7 @@ pipeline {
         IMAGE_TAG = "localhost/${APP_NAME}:${env.BUILD_NUMBER}"
         HELM_CHART_DIR = 'frontend-chart'  
         BASE_CHART_DIR = 'base-chart'  
-        KUBE_NAMESPACE = 'default'  
+        KUBE_NAMESPACE = 'frontend'  
     }
 
     stages {
