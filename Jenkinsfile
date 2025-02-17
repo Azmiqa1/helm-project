@@ -2,7 +2,7 @@ pipeline {
     agent any  
 
     environment {
-        APP_NAME = 'frontend-apppp'
+        APP_NAME = 'frontend-appp'
         PATH = "/usr/local/bin:${env.PATH}"
         IMAGE_TAG = "localhost/${APP_NAME}:${env.BUILD_NUMBER}"
         HELM_CHART_DIR = 'frontend-chart'  
@@ -47,7 +47,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    echo "Deploying ${APP_NAME} to Kubernetes namespace ${KUBE_NAMESPACE}..."
+                    echo "Deploying ${APP_NAME} to Kubernetes namespace ${KUBE_NAMESPACE}"
                     sh """
                         helm upgrade --install ${APP_NAME} ${HELM_CHART_DIR} \
                             --namespace ${KUBE_NAMESPACE} \
