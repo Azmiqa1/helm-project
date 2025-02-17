@@ -35,6 +35,16 @@ pipeline {
             }
         }
 
+         stage('Push Docker Image') {
+            steps {
+                script 
+                    echo "Logging into Docker Hub and pushing image..."
+                    sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
+                   
+                }
+            }
+        }
+
 
         stage('Deploy to Kubernetes') {
             steps {
