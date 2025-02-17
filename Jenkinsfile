@@ -3,8 +3,8 @@ pipeline {
 
     environment {
         DOCKER_HUB_REPO = 'azmiqa1/hello-frontend'
-        DOCKER_USER = credentials('docker-hub')
-        DOCKER_PASS = credentials('docker-hub')
+        DOCKER_USER = credentials('docker-hubb')
+        DOCKER_PASS = credentials('docker-hubb')
         APP_NAME = 'frontend-app'
         PATH = "/usr/local/bin:${env.PATH}"
         IMAGE_TAG = "${DOCKER_HUB_REPO}:${env.BUILD_NUMBER}"
