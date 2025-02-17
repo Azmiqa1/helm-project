@@ -37,8 +37,8 @@ pipeline {
                 script {
                     echo "Saving Docker image as a tar file on the local machine"
                     sh """
-                        docker save -o /home/azmi-alqawasmi/Desktop/${APP_NAME}.tar ${IMAGE_TAG}
-                        docker load -i /home/azmi-alqawasmi/Desktop/${APP_NAME}.tar
+                        docker save -o /Users/azmi-alqawasmi/Desktop/${APP_NAME}.tar ${IMAGE_TAG}
+                        docker load -i /Users/azmi-alqawasmi/Desktop/${APP_NAME}.tar
                     """
                 }
             }
