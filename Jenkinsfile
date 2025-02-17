@@ -31,6 +31,10 @@ pipeline {
                         cd hello-frontend
                         docker build -t ${IMAGE_TAG} .
                     """
+
+                    echo "Logging into Docker Hub and pushing image..."
+                    sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
+                    
                 }
             }
         }
@@ -40,7 +44,7 @@ pipeline {
                 script 
                     echo "Logging into Docker Hub and pushing image..."
                     sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
-                   
+                    sh "docker push ${IMAGE_TAG}"
                 }
             }
         }
