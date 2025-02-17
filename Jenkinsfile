@@ -2,8 +2,8 @@ pipeline {
     agent any  
 
     environment {
-        DOCKER_HUB_REPO = 'azmiqa1/hello-frontend'
-        DOCKER_USER = credentials('docker-hubbb')
+        DOCKER_HUB_REPO = 'azmiqa1/hello-frontend'  
+        DOCKER_USER = credentials('docker-hubbb') 
         DOCKER_PASS = credentials('docker-hubbb')
         APP_NAME = 'frontend-appp'
         PATH = "/usr/local/bin:${env.PATH}"
@@ -23,7 +23,7 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build & Push Docker Image') {
             steps {
                 script {
                     echo "Building Docker image from hello-frontend directory..."
@@ -31,24 +31,13 @@ pipeline {
                         cd hello-frontend
                         docker build -t ${IMAGE_TAG} .
                     """
-
-                    echo "Logging into Docker Hub and pushing image..."
-                    sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
                     
-                }
-            }
-        }
-
-         stage('Push Docker Image') {
-            steps {
-                script 
                     echo "Logging into Docker Hub and pushing image..."
                     sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
                     sh "docker push ${IMAGE_TAG}"
                 }
             }
         }
-
 
         stage('Deploy to Kubernetes') {
             steps {
