@@ -1,6 +1,0 @@
-dependencies:
-- name: base-chart
-  repository: file:///Users/azmi-alqawasmi/Desktop/base-chart/base-chart
-  version: 0.1.0
-digest: sha256:72905ca249797073cd1ce59de95941ab2180477bd7f87761f523cb406b301983
-generated: "2025-02-12T13:12:50.232659+03:00"
