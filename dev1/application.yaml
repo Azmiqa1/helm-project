@@ -8,7 +8,11 @@ spec:
   source:
     repoURL: https://github.com/Azmiqa1/helm-project.git
     targetRevision: HEAD
-    path: guestbook
+    path: dev1
   destination:
     server: https://kubernetes.default.svc
-    namespace: guestbook
+    namespace: myapp
+
+  syncPolicy:
+    syncOptions:
+    -CreateNamespace=true
