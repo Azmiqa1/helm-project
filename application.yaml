@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/Azmiqa1/helm-project.git
     targetRevision: HEAD
-    path: project
+    path: project/frontend-chart
   destination:
     server: https://kubernetes.default.svc
     namespace: myapp
