@@ -14,9 +14,9 @@ spec:
     namespace: myapp
 
  syncPolicy:
-    automated:
-      selfHeal: true
     syncOptions:
     - CreateNamespace=true
-    - Prune=false
-    - Replace=false
+
+    automated:
+      selfHeal: true
+      prune: true
